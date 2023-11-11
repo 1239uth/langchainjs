@@ -1,5 +1,4 @@
 import { google } from "googleapis";
-import { CallbackManagerForToolRun } from "../../callbacks/manager.js";
 import { GmailBaseToolParams, GmailBaseTool } from "./base.js";
 
 export class GmailGetMessage extends GmailBaseTool {
@@ -11,7 +10,7 @@ export class GmailGetMessage extends GmailBaseTool {
     super(fields);
   }
 
-  async _call(messageId: string, runManager?: CallbackManagerForToolRun) {
+  async _call(messageId: string) {
     const auth = await this.getAuth();
 
     const gmail = google.gmail({ version: "v1", auth });
