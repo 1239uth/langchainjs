@@ -8,6 +8,7 @@ export interface SendMessageSchema {
   bcc?: string | string[];
 }
 
+//test comment
 export class GmailSendMessage extends GmailBaseTool {
   name = "gmail_send_message";
 
