@@ -1,7 +1,7 @@
 import { GmailCreateDraft } from "../gmail/create_draft.js";
 import { GmailGetMessage } from "../gmail/get_message.js";
 import { GetThreadSchema, GmailGetThread } from "../gmail/get_thread.js";
-import { GmailSendMessage, SendMessageParams } from "../gmail/sent_message.js";
+import { GmailSendMessage, SendMessageSchema} from "../gmail/send_message.js";
 
 describe("GmailTool", () => {
   it("creates a draft successfully", async () => {
@@ -23,7 +23,7 @@ describe("GmailTool", () => {
     const getMessageHandler = new GmailGetMessage();
 
     const getMessageRequest = "123";
-    const getMessageResponse = await getMessageHandler._call(getMessageRequest);
+    const getMessageResponse = await getMessageHandler._call({messageId: getMessageRequest});
 
     expect(getMessageResponse).toBeTruthy();
   });
@@ -42,8 +42,8 @@ describe("GmailTool", () => {
   it("send message successfully", async () => {
     const sendMessageHandler = new GmailSendMessage();
 
-    const sendMessageRequest: SendMessageParams = {
-      to: "hamoon.dev@gmail.com",
+    const sendMessageRequest: SendMessageSchema = {
+      to: ["hamoon.dev@gmail.com"],
       subject: "some subject...",
       message: "some message...",
     };
