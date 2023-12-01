@@ -1,7 +1,7 @@
 import { gmail_v1, google } from "googleapis";
 import { z } from "zod";
-import { getEnvironmentVariable } from "../../util/env.js";
 import { Tool } from "../base.js";
+import { getEnvironmentVariable } from "../../util/env.js";
 
 export interface GmailBaseToolParams {
   credentials?: {
