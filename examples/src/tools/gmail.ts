@@ -1,13 +1,6 @@
 import { initializeAgentExecutorWithOptions } from "langchain/agents";
+import { GmailToolkit } from "langchain/agents/toolkits";
 import { OpenAI } from "langchain/llms/openai";
-import { StructuredTool } from "langchain/tools";
-import {
-  GmailCreateDraft,
-  GmailGetMessage,
-  GmailGetThread,
-  GmailSearch,
-  GmailSendMessage,
-} from "langchain/tools/gmail";
 
 export async function run() {
   const model = new OpenAI({
@@ -24,19 +17,17 @@ export async function run() {
   //     scopes: ["https://mail.google.com/"],
   //   };
 
-  // For custom parameters, uncomment the code above, replace the values with your own, and pass it to the tools below
-  const tools: StructuredTool[] = [
-    new GmailCreateDraft(),
-    new GmailGetMessage(),
-    new GmailGetThread(),
-    new GmailSearch(),
-    new GmailSendMessage(),
-  ];
+  // For custom parameters, uncomment the code above, replace the values with your own, and pass it to the toolkit below
+  const gmailToolkit = new GmailToolkit();
 
-  const gmailAgent = await initializeAgentExecutorWithOptions(tools, model, {
-    agentType: "structured-chat-zero-shot-react-description",
-    verbose: true,
-  });
+  const gmailAgent = await initializeAgentExecutorWithOptions(
+    gmailToolkit.tools,
+    model,
+    {
+      agentType: "zero-shot-react-description",
+      verbose: true,
+    }
+  );
 
   const createInput = `Create a gmail draft for me to edit of a letter from the perspective of a sentient parrot who is looking to collaborate on some research with her estranged friend, a cat. Under no circumstances may you send the message, however.`;
 
