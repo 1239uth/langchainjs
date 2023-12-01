@@ -1,6 +1,7 @@
 import { gmail_v1, google } from "googleapis";
-import { Tool } from "../base.js";
+import { z } from "zod";
 import { getEnvironmentVariable } from "../../util/env.js";
+import { Tool } from "../base.js";
 
 export interface GmailBaseToolParams {
   credentials?: {
@@ -18,31 +19,40 @@ export abstract class GmailBaseTool extends Tool {
 
   protected gmail: gmail_v1.Gmail;
 
+  private CredentialsSchema = z
+    .object({
+      clientEmail: z
+        .string()
+        .min(1)
+        .default(getEnvironmentVariable("GMAIL_CLIENT_EMAIL") ?? ""),
+      privateKey: z
+        .string()
+        .default(getEnvironmentVariable("GMAIL_PRIVATE_KEY") ?? ""),
+      keyfile: z
+        .string()
+        .default(getEnvironmentVariable("GMAIL_KEYFILE") ?? ""),
+    })
+    .refine(
+      (credentials) =>
+        credentials.privateKey !== "" || credentials.keyfile !== "",
+      {
+        message:
+          "Missing GMAIL_PRIVATE_KEY or GMAIL_KEYFILE to interact with Gmail",
+      }
+    );
+
+  private GmailBaseToolParamsSchema = z
+    .object({
+      credentials: this.CredentialsSchema.default({}),
+      scopes: z.array(z.string()).default(["https://mail.google.com/"]),
+    })
+    .default({});
+
   constructor(fields?: Partial<GmailBaseToolParams>) {
     super(...arguments);
 
-    const credentials = fields?.credentials || {};
-    credentials.clientEmail =
-      credentials.clientEmail ||
-      getEnvironmentVariable("GMAIL_CLIENT_EMAIL") ||
-      "";
-    credentials.privateKey =
-      credentials.privateKey ||
-      getEnvironmentVariable("GMAIL_PRIVATE_KEY") ||
-      "";
-    credentials.keyfile =
-      credentials.keyfile || getEnvironmentVariable("GMAIL_KEYFILE") || "";
-
-    if (credentials.clientEmail === "") {
-      throw new Error("Missing GMAIL_CLIENT_EMAIL to interact with Gmail");
-    }
-    if (credentials.privateKey === "" && credentials.keyfile === "") {
-      throw new Error(
-        "Missing GMAIL_PRIVATE_KEY or GMAIL_KEYFILE to interact with Gmail"
-      );
-    }
-
-    const scopes = fields?.scopes || ["https://mail.google.com/"];
+    const { credentials, scopes } =
+      this.GmailBaseToolParamsSchema.parse(fields);
 
     this.gmail = this.getGmail(
       scopes,
@@ -59,6 +69,7 @@ export abstract class GmailBaseTool extends Tool {
     keyfile?: string
   ) {
     const auth = new google.auth.JWT(email, keyfile, key, scopes);
+
     return google.gmail({ version: "v1", auth });
   }
 }
